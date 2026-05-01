@@ -15,7 +15,7 @@ function getErrorMessage(err, fallback) {
   if (data?.error) return data.error
   if (data?.message) return data.message
   if (Array.isArray(data?.errors) && data.errors.length > 0) return data.errors[0]
-  if (err?.code === 'ERR_NETWORK') return 'Cannot reach server. Please make sure backend is running on port 8080.'
+  if (err?.code === 'ERR_NETWORK') return 'Cannot reach server. Please check the deployed backend URL.'
   return fallback
 }
 

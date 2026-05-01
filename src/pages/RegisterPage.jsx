@@ -15,11 +15,11 @@ function getErrorMessage(err, fallback) {
   if (data?.error) return data.error
   if (data?.message) return data.message
   if (Array.isArray(data?.errors) && data.errors.length > 0) return data.errors[0]
-  if (err?.code === 'ERR_NETWORK') return 'Cannot reach server. Please make sure backend is running on port 8080.'
+  if (err?.code === 'ERR_NETWORK') return 'Cannot reach server. Please check the deployed backend URL.'
   return fallback
 }
 
-function RegisterPage() {
+function RegisterPage({ setUser }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'USER' })
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -38,8 +38,10 @@ function RegisterPage() {
         email: form.email.trim().toLowerCase()
       }
       const { data } = await authApi.register(payload)
+      setUser(data)
       localStorage.setItem('sessionToken', data.token)
       localStorage.setItem('sessionUser', JSON.stringify(data))
+      window.dispatchEvent(new Event('auth:changed'))
       setMessage('Registered successfully.')
       if (data.role === 'ADMIN') navigate('/admin')
       if (data.role === 'TEACHER') navigate('/teacher')

@@ -8,6 +8,17 @@ import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import StudentDashboard from './pages/StudentDashboard'
 
+function getStoredUser() {
+  try {
+    const saved = localStorage.getItem('sessionUser')
+    return saved ? JSON.parse(saved) : null
+  } catch {
+    localStorage.removeItem('sessionUser')
+    localStorage.removeItem('sessionToken')
+    return null
+  }
+}
+
 function ProtectedRoute({ user, role, children }) {
   if (!user) {
     return <Navigate to="/login" replace />
@@ -19,12 +30,17 @@ function ProtectedRoute({ user, role, children }) {
 }
 
 function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => getStoredUser())
 
   useEffect(() => {
-    const saved = localStorage.getItem('sessionUser')
-    if (saved) {
-      setUser(JSON.parse(saved))
+    const syncAuthState = () => setUser(getStoredUser())
+
+    window.addEventListener('auth:changed', syncAuthState)
+    window.addEventListener('storage', syncAuthState)
+
+    return () => {
+      window.removeEventListener('auth:changed', syncAuthState)
+      window.removeEventListener('storage', syncAuthState)
     }
   }, [])
 
@@ -36,7 +52,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage setUser={setUser} />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<RegisterPage setUser={setUser} />} />
           <Route
             path="/admin"
             element={
